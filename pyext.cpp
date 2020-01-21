@@ -4,21 +4,11 @@
 #include <algorithm>
 
 std::vector<long long> list2vec(PyObject* incoming) {
-	std::vector<long long> data;
-	if (PyTuple_Check(incoming)) {
-		for(Py_ssize_t i = 0; i < PyTuple_Size(incoming); i++) {
-			PyObject* value = PyTuple_GetItem(incoming, i);
-			data.push_back( PyLong_AsLongLong(value) );
-		}
-	} else {
-		if (PyList_Check(incoming)) {
-			for(Py_ssize_t i = 0; i < PyList_Size(incoming); i++) {
-				PyObject* value = PyList_GetItem(incoming, i);
-				data.push_back( PyLong_AsLongLong(value) );
-			}
-		} else {
-			throw std::logic_error("Passed PyObject pointer was not a list or tuple!");
-		}
+	std::vector<long long> data={};
+	Py_ssize_t l=PySequence_Length(incoming);
+	for(Py_ssize_t i = 0; i < l; i++) {
+		PyObject* value = PySequence_GetItem(incoming, i);
+		data.push_back(PyLong_AsLongLong(value));
 	}
 	return data;
 }
@@ -39,15 +29,16 @@ PyObject* vec2list(std::vector<long long> data) {
 
 static PyObject* method_merge(PyObject* self, PyObject* args){
 	PyObject *l1,*l2=NULL;
-	if(!PyArg_ParseTuple(args,"ss",&l1,&l2)){
+	if(!PyArg_ParseTuple(args,"OO",&l1,&l2)){
 		return NULL;
 	}
 	std::vector<long long> v1=list2vec(l1);
 	std::vector<long long> v2=list2vec(l2);
 	std::vector<long long> result={};
-	std::merge(v1.begin(),v1.end(),v2.begin(),v2.end(),result.begin());
+	std::merge(v1.begin(),v1.end(),v2.begin(),v2.end(),std::back_inserter(result));
 	return vec2list(result);
 }
+
 
 static PyMethodDef PyExtMethods[] = {
 	{"merge", method_merge, METH_VARARGS, "Python interface for merge C++ library function"},	//defines a function for python
@@ -62,5 +53,5 @@ static struct PyModuleDef pyextmodule = {
 };
 
 PyMODINIT_FUNC PyInit_pyext(void){
-	return PyModuleCreate(&pyextmodule)
+	return PyModule_Create(&pyextmodule);
 }
