@@ -44,6 +44,33 @@ static PyMethodDef PyExtMethods[] = {
 	{"merge", method_merge, METH_VARARGS, "Python interface for merge C++ library function"},	//defines a function for python
 	{NULL, NULL, 0, NULL}
 };
+
+//https://docs.python.org/3/extending/newtypes.html
+PyTypeObject Test = {
+	PyVarObject_HEAD_INIT(0,0)
+	"Test",
+	-1,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	"This is a docstring"
+};
+
+//https://docs.python.org/3/c-api/module.html#initializing-c-modules
 static struct PyModuleDef pyextmodule = {
 	PyModuleDef_HEAD_INIT,
 	"pyext",
@@ -53,5 +80,12 @@ static struct PyModuleDef pyextmodule = {
 };
 
 PyMODINIT_FUNC PyInit_pyext(void){
-	return PyModule_Create(&pyextmodule);
+	PyObject *module = PyModule_Create(&pyextmodule);
+	if(PyType_Ready(&Test)<0){
+		PyErr_Format(PyExc_ImportError,"Cannot register Test in %s (%s:%d)",__FUNCTION__,__FILE__,__LINE__);
+		return NULL;
+	}
+	Py_INCREF(&Test);
+	PyModule_AddObject(module,"Test",(PyObject*)&Test);
+	return module;
 }
