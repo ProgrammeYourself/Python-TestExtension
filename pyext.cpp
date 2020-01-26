@@ -40,7 +40,7 @@ static PyObject* method_merge(PyObject* self, PyObject* args){
 }
 
 
-static PyMethodDef PyExtMethods[] = {
+static PyMethodDef PyMeth_merge[] = {
 	{"merge", method_merge, METH_VARARGS, "Python interface for merge C++ library function"},	//defines a function for python
 	{NULL, NULL, 0, NULL}
 };
@@ -76,7 +76,7 @@ static struct PyModuleDef pyextmodule = {
 	"pyext",
 	"Just some module to test C++ modules for python",
 	-1,
-	PyExtMethods
+	{PyMeth_merge}
 };
 
 PyMODINIT_FUNC PyInit_pyext(void){
